@@ -19,3 +19,6 @@ RUN echo ":80" > /etc/caddy/Caddyfile && \
 
 # Expose port 80
 EXPOSE 80
+
+# Start Caddy when the container runs
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]
