@@ -1,0 +1,24 @@
+# Use Ubuntu 22.04 as the base image
+FROM ubuntu:22.04
+
+# Install required packages
+RUN apt-get update -y && \
+    apt-get install -y curl
+
+# Download and install Caddy
+RUN curl -o /usr/local/bin/caddy https://caddyserver.com/download/linux/amd64 && \
+    chmod +x /usr/local/bin/caddy
+
+# Create a directory for Caddy configuration
+RUN mkdir /etc/caddy
+
+# Create a Caddyfile to serve the default welcome page
+RUN echo ":80" > /etc/caddy/Caddyfile && \
+    echo "root * /usr/share/caddy" >> /etc/caddy/Caddyfile && \
+    echo "file_server" >> /etc/caddy/Caddyfile
+
+# Expose port 80
+EXPOSE 80
+
+# Start Caddy
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]
