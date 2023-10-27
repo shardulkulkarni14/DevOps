@@ -19,7 +19,10 @@ RUN apt-get update -y && \
 
 # Create a Caddyfile to configure Caddy
 RUN echo "http://server.local {" > /etc/caddy/Caddyfile
+RUN echo "    encode gzip" >> /etc/caddy/Caddyfile
+RUN echo "    file_server /www" >> /etc/caddy/Caddyfile
 RUN echo "}" >> /etc/caddy/Caddyfile
+
 
 # Expose port 80 for HTTP
 EXPOSE 80
