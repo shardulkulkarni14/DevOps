@@ -1,24 +1,31 @@
 # Use Ubuntu 22.04 as the base image
 FROM ubuntu:22.04
 
-# Install required packages
+# Install necessary packages for Caddy installation
 RUN apt-get update -y && \
-    apt-get install -y curl
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    debian-keyring \
+    debian-archive-keyring \
+    apt-transport-https
 
-# Download and install Caddy
-RUN curl -o /usr/local/bin/caddy https://caddyserver.com/download/linux/amd64 && \
-    chmod +x /usr/local/bin/caddy
+# Add the Caddy GPG key and repository to the sources.list
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
 
-# Create a directory for Caddy configuration
-RUN mkdir /etc/caddy
+# Update package information and install Caddy
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y caddy
 
-# Create a Caddyfile to serve the default welcome page
-RUN echo ":80" > /etc/caddy/Caddyfile && \
-    echo "root * /usr/share/caddy" >> /etc/caddy/Caddyfile && \
-    echo "file_server" >> /etc/caddy/Caddyfile
+# Create a Caddyfile to configure Caddy
+RUN echo "http://server.local {" > /etc/caddy/Caddyfile
+RUN echo "    encode gzip" >> /etc/caddy/Caddyfile
+RUN echo "    file_server /www" >> /etc/caddy/Caddyfile
+RUN echo "}" >> /etc/caddy/Caddyfile
 
-# Expose port 80
+# Create the default web page
+RUN mkdir /www
+RUN echo "<h1>Welcome to Caddy Web Server</h1>" > /www/index.html
+
+# Expose port 80 for HTTP
 EXPOSE 80
-
-# Start Caddy when the container runs
-CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]
