@@ -25,7 +25,7 @@ RUN echo "}" >> /etc/caddy/Caddyfile
 
 # Create the default web page
 RUN mkdir /www
-RUN echo "<h1>Welcome to Caddy Web Server</h1>" > /www/index.html
+RUN echo "<h1>Caddy is ready to serve your site over HTTPS:</h1>" > /www/index.html
 
 # Expose port 80 for HTTP
 EXPOSE 80
