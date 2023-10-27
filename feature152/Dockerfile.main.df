@@ -17,12 +17,5 @@ RUN curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | t
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y caddy
 
-# Create a Caddyfile to configure Caddy
-RUN echo "http://server.local {" > /etc/caddy/Caddyfile
-RUN echo "    encode gzip" >> /etc/caddy/Caddyfile
-RUN echo "    file_server /www" >> /etc/caddy/Caddyfile
-RUN echo "}" >> /etc/caddy/Caddyfile
-
-
 # Expose port 80 for HTTP
 EXPOSE 80
