@@ -1,0 +1,21 @@
+# Use Ubuntu 22.04 as the base image
+FROM ubuntu:22.04
+
+# Install necessary packages for Caddy installation
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    debian-keyring \
+    debian-archive-keyring \
+    apt-transport-https
+
+# Add the Caddy GPG key and repository to the sources.list
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+
+# Update package information and install Caddy
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y caddy
+
+# Expose port 80 for HTTP
+EXPOSE 80
