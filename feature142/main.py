@@ -17,7 +17,7 @@ def process_input(input_file):
         del columns[6]
 
         # Print [number of words]:[line without column 7]
-        print(f"{len(line.split())}:\t{'\t'.join(columns)}")
+        print("{}:\t{}".format(len(line.split()), '\t'.join(columns)))
 
 if __name__ == "__main__":
     # Assuming input.txt is in the same directory as main.py
