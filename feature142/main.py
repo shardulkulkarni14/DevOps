@@ -1,3 +1,7 @@
+# main.py
+
+import os
+
 def process_input(input_file):
     with open(input_file, 'r') as file:
         lines = file.readlines()
@@ -20,7 +24,8 @@ def process_input(input_file):
         print("{}:\t{}".format(len(line.split()), '\t'.join(columns)))
 
 if __name__ == "__main__":
-    # Assuming input.txt is in the same directory as main.py
-    input_file = "exercises/feature142/input.txt"
+    # Use an absolute path to the input file
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    input_file = os.path.join(current_directory, "input.txt")
     
     process_input(input_file)
