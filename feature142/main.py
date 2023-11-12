@@ -17,4 +17,5 @@ for line in lines:
     del columns[6]
 
     # Print [number of words]:[line without column 7]
-    print("{count}:\t{content}".format(count=len(line.split()), content='\t'.join(columns)))
+    word_count = sum(len(col.split()) for col in columns)
+    print("{count}:\t{content}".format(count=word_count, content='\t'.join(columns)))
