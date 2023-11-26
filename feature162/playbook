@@ -39,7 +39,7 @@
   tasks:
     - name: Install Apache2 on node2.local
       apt:
-        name: apache2=2.4.41-4ubuntu3.14
+        name: apache2
         state: present
 
     - name: Set up Apache2 homepage
