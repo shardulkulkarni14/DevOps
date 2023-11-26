@@ -23,14 +23,6 @@
               server node2.local:80 weight=5;
               server node3.local:8080 weight=1;
           }
-          server {
-              listen 80;
-              server_name node1.local;
-              
-              location / {
-                proxy_pass http://backend;
-              }
-          }
 
     - name: Start the Nginx server
       service:
