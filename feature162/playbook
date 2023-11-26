@@ -1,38 +1,91 @@
----
-- name: Set up Nginx as Load Balancer
-  hosts: master.local
+- hosts: node1.local
   become: true
+  become_method: sudo
 
   tasks:
     - name: Install Nginx on node1.local
       apt:
         name: nginx
         state: present
+        update_cache: true
 
+    - name: Configure Nginx as load balancer
+      blockinfile:
+        dest: /etc/nginx/nginx.conf
+        insertafter: "http {"
+        content: |
+          upstream backend {
+              server node2.local:80 weight=5;
+              server node3.local:8080 weight=1;
+          }
+          server {
+              listen 80;
+              server_name node1.local;
+              
+              location / {
+                proxy_pass http://backend;
+              }
+          }
+
+    - name: Start the Nginx server
+      service:
+        name: nginx
+        state: started
+
+- hosts: node2.local
+  become: true
+  become_method: sudo
+
+  tasks:
     - name: Install Apache2 on node2.local
       apt:
         name: apache2=2.4.41-4ubuntu3.14
         state: present
-      notify: Restart Apache2
 
     - name: Set up Apache2 homepage
       copy:
         content: "qrumnruowvkv"
         dest: /var/www/html/index.html
-      notify: Restart Apache2
 
-    - name: Install Tomcat on node3.local
-      apt:
-        name: tomcat9=9.0.37
-        state: present
-
-    - name: Set up Tomcat homepage
-      copy:
-        content: "qhrykxeislbu"
-        dest: /usr/local/tomcat/webapps/ROOT/index.html
-
-  handlers:
     - name: Restart Apache2
       service:
         name: apache2
         state: restarted
+
+- hosts: node3.local
+  become: true
+  become_method: sudo
+
+  tasks:
+    - name: Install Tomcat on node3.local
+      apt:
+        name: default-jdk
+        state: present
+
+    - name: Download and extract Tomcat 9.0.37
+      get_url:
+        url: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.37/bin/apache-tomcat-9.0.37.tar.gz
+        dest: /usr/local
+
+    - name: Extract Tomcat archive
+      ansible.builtin.unarchive:
+        src: /usr/local/apache-tomcat-9.0.37.tar.gz
+        dest: /usr/local
+        remote_src: yes
+
+    - name: Set up Tomcat homepage
+      copy:
+        dest: /usr/local/apache-tomcat-9.0.37/webapps/ROOT/index.html
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <title>node3.local Tomcat server</title>
+          </head>
+          <body>
+            <p>qhrykxeislbu</p>
+          </body>
+          </html>
+
+    - name: Start Tomcat server
+      shell: /usr/local/apache-tomcat-9.0.37/bin/startup.sh
