@@ -1,0 +1,38 @@
+---
+- name: Set up Nginx as Load Balancer
+  hosts: master.local
+  become: true
+
+  tasks:
+    - name: Install Nginx on node1.local
+      apt:
+        name: nginx
+        state: present
+
+    - name: Install Apache2 on node2.local
+      apt:
+        name: apache2=2.4.41-4ubuntu3.14
+        state: present
+      notify: Restart Apache2
+
+    - name: Set up Apache2 homepage
+      copy:
+        content: "qrumnruowvkv"
+        dest: /var/www/html/index.html
+      notify: Restart Apache2
+
+    - name: Install Tomcat on node3.local
+      apt:
+        name: tomcat9=9.0.37
+        state: present
+
+    - name: Set up Tomcat homepage
+      copy:
+        content: "qhrykxeislbu"
+        dest: /usr/local/tomcat/webapps/ROOT/index.html
+
+  handlers:
+    - name: Restart Apache2
+      service:
+        name: apache2
+        state: restarted
