@@ -20,14 +20,28 @@
         insertafter: "http {"
         content: |
           upstream backend {
-              server node2.local:80 weight=5;
+              server node2.local:80 weight=2;
               server node3.local:8080 weight=1;
+          }
+          server {
+              listen 80;
+              server_name node1.local;
+              
+              location / {
+                proxy_pass http://backend;
+              }
           }
 
     - name: Start the Nginx server
       service:
         name: nginx
         state: started
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+
 
 - hosts: node2.local
   become: true
