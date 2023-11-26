@@ -57,15 +57,6 @@
   become_method: sudo
 
   tasks:
-    - name: Update the System Packages
-      apt:
-        upgrade: yes
-        update_cache: yes
-
-    - name: Install jdk
-      apt:
-        name: default-jdk
-        state: present
 
     - name: setup version 9.0.37 of Tomcat
       get_url:
