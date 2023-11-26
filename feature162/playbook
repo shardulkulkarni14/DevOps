@@ -57,35 +57,40 @@
   become_method: sudo
 
   tasks:
-    - name: Install Tomcat on node3.local
+    - name: Update the System Packages
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Install jdk
       apt:
         name: default-jdk
         state: present
 
-    - name: Download and extract Tomcat 9.0.37
+    - name: setup version 9.0.37 of Tomcat
       get_url:
         url: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.37/bin/apache-tomcat-9.0.37.tar.gz
         dest: /usr/local
 
-    - name: Extract Tomcat archive
-      ansible.builtin.unarchive:
+    - name: Extract the gz file
+      unarchive:
         src: /usr/local/apache-tomcat-9.0.37.tar.gz
         dest: /usr/local
         remote_src: yes
 
-    - name: Set up Tomcat homepage
+    - name: Web server home page Configuration
       copy:
         dest: /usr/local/apache-tomcat-9.0.37/webapps/ROOT/index.html
         content: |
           <!DOCTYPE html>
           <html lang="en">
           <head>
-            <title>node3.local Tomcat server</title>
+          <title>node3.local tomcat server</title>
           </head>
           <body>
-            <p>qhrykxeislbu</p>
+          <p>obbpsrjkdale</p>
           </body>
           </html>
 
-    - name: Start Tomcat server
+    - name: Starting Tomcat Server
       shell: /usr/local/apache-tomcat-9.0.37/bin/startup.sh
