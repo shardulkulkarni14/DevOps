@@ -1,26 +1,21 @@
 - hosts: node1.local
   become: true
   become_method: sudo
-
   tasks:
-    - name: Install python3-apt on node1.local
-      apt:
-        name: python3-apt
-        state: present
-
-    - name: Install Nginx on node1.local
+    - name: nginx installation for node1
       apt:
         name: nginx
         state: present
         update_cache: true
+        cache_valid_time: 5000
 
-    - name: Configure Nginx as load balancer
+    - name: Configure nginx as load balancer
       blockinfile:
         dest: /etc/nginx/nginx.conf
         insertafter: "http {"
         content: |
           upstream backend {
-              server node2.local:80 weight=2;
+              server node2.local:80 weight=5;
               server node3.local:8080 weight=1;
           }
           server {
@@ -32,33 +27,52 @@
               }
           }
 
-    - name: Start the Nginx server
+    - name: Start the nginx server 
       service:
         name: nginx
         state: started
-  handlers:
-    - name: restart nginx
-      service:
-        name: nginx
-        state: restarted
+
 
 
 - hosts: node2.local
   become: true
   become_method: sudo
-
+  vars_files:
+    - default.yml
   tasks:
-    - name: Install Apache2 on node2.local
+    - name: Install Apache
       apt:
         name: apache2
         state: present
+        update_cache: yes
 
-    - name: Set up Apache2 homepage
-      copy:
-        content: "qrumnruowvkv"
-        dest: /var/www/html/index.html
+    - name: Create document root
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: "{{ app_user }}"
+        mode: '0755'
 
-    - name: Restart Apache2
+    - name: Copy index test page
+      template:
+        src: "index.html.j2"
+        dest: "/var/www/{{ http_host }}/index.html"
+
+    - name: Set up Apache virtual host
+      template:
+        src: "apache.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+
+    - name: Enable new site
+      command: /usr/sbin/a2ensite {{ http_conf }}
+      notify: restart apache2
+      
+    - name: Disable default Apache site
+      command: /usr/sbin/a2dissite 000-default.conf
+      when: true
+
+  handlers:
+    - name: restart apache2
       service:
         name: apache2
         state: restarted
@@ -68,6 +82,10 @@
   become_method: sudo
 
   tasks:
+    - name: Update the System Packages
+      apt:
+        upgrade: yes
+        update_cache: yes
     - name: Install jdk
       apt:
         name: default-jdk
@@ -79,11 +97,10 @@
         dest: /usr/local
 
     - name: Extract the gz file
-      unarchive:
+      ansible.builtin.unarchive:
         src: /usr/local/apache-tomcat-9.0.37.tar.gz
         dest: /usr/local
         remote_src: yes
-      become: true
 
     - name: Web server home page Configuration
       copy:
@@ -95,9 +112,9 @@
           <title>node3.local tomcat server</title>
           </head>
           <body>
-          <p>obbpsrjkdale</p>
+          <p>qhrykxeislbu</p>
           </body>
           </html>
 
     - name: Starting Tomcat Server
-      shell: /usr/local/apache-tomcat-9.0.37/bin/startup.sh
+      shell: nohup /usr/local/apache-tomcat-9.0.37/bin/startup.sh
