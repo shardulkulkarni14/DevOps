@@ -1,67 +1,118 @@
-# playbook.yml
-
----
-- name: Configure Web Servers and Load Balancer
-  hosts: master.local
+- hosts: node1.local
   become: true
-  gather_facts: true
-
+  become_method: sudo
   tasks:
-    - name: Install Nginx on node1.local
+    - name: nginx installation for node1
       apt:
         name: nginx
         state: present
-        update_cache: yes
+        update_cache: true
+        cache_valid_time: 5000
 
-    - name: Configure Nginx as a load balancer
-      template:
-        src: nginx.conf.j2
+    - name: Configure Nginx as load balancer
+      blockinfile:
         dest: /etc/nginx/nginx.conf
-      notify: restart nginx
+        insertafter: "http {"
+        content: |
+          upstream backend {
+              server node2.local:80 weight=5;
+              server node3.local:8080 weight=1;
+          }
+          server {
+              listen 80;
+              server_name node1.local;
+              
+              location / {
+                proxy_pass http://backend;
+              }
+          }
 
-    - name: Start Nginx service
+    - name: Start the Nginx server
       service:
         name: nginx
         state: started
 
-    - name: Install Apache2 on node2.local
+- hosts: node2.local
+  become: true
+  become_method: sudo
+  vars_files:
+    - default.yml
+  tasks:
+    - name: Install Apache
       apt:
-        name: apache2=2.4.41-4ubuntu3.14
+        name: apache2
         state: present
         update_cache: yes
 
-    - name: Set up Apache2 homepage
-      template:
-        src: index.html.j2
-        dest: /var/www/html/index.html
+    - name: Create document root
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: "{{ app_user }}"
+        mode: '0755'
 
-    - name: Restart Apache2 service
+    - name: Copy index test page
+      template:
+        src: "index.html.j2"
+        dest: "/var/www/{{ http_host }}/index.html"
+
+    - name: Set up Apache virtual host
+      template:
+        src: "apache.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+
+    - name: Enable new site
+      command: /usr/sbin/a2ensite {{ http_conf }}
+      notify: restart apache2
+      
+    - name: Disable default Apache site
+      command: /usr/sbin/a2dissite 000-default.conf
+      when: true
+
+  handlers:
+    - name: restart apache2
       service:
         name: apache2
         state: restarted
 
-    - name: Install Tomcat on node3.local
+- hosts: node3.local
+  become: true
+  become_method: sudo
+
+  tasks:
+    - name: Update the System Packages
+      apt:
+        upgrade: yes
+        update_cache: yes
+    - name: Install jdk
       apt:
         name: default-jdk
         state: present
 
-    - name: Download and extract Tomcat
+    - name: setup version 9.0.37 of Tomcat
       get_url:
         url: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.37/bin/apache-tomcat-9.0.37.tar.gz
         dest: /usr/local
-      args:
-        creates: /usr/local/apache-tomcat-9.0.37  # Skip if Tomcat is already present
 
-    - name: Web server home page configuration for Tomcat
-      template:
-        src: tomcat-index.html.j2
+    - name: Extract the gz file
+      ansible.builtin.unarchive:
+        src: /usr/local/apache-tomcat-9.0.37.tar.gz
+        dest: /usr/local
+        remote_src: yes
+
+    - name: Web server home page Configuration
+      copy:
         dest: /usr/local/apache-tomcat-9.0.37/webapps/ROOT/index.html
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+          <title>node3.local tomcat server</title>
+          </head>
+          <body>
+          <p>qhrykxeislbu</p>
+          </body>
+          </html>
 
-    - name: Start Tomcat service
-      command: /usr/local/apache-tomcat-9.0.37/bin/startup.sh
-
-  handlers:
-    - name: restart nginx
-      service:
-        name: nginx
-        state: restarted
+    - name: Starting Tomcat Server
+      shell: nohup /usr/local/apache-tomcat-9.0.37/bin/startup.sh
