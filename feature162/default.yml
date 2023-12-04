@@ -1,6 +1,0 @@
----
-app_user: "root"
-http_host: "node2.local"
-http_conf: "node2.local.conf"
-http_port: "80"
-disable_default: true
