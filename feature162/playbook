@@ -1,0 +1,90 @@
+- hosts: node1.local
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Install python3-apt on node1.local
+      apt:
+        name: python3-apt
+        state: present
+    - name: Install Nginx on node1.local
+      apt:
+        name: nginx
+        state: present
+        update_cache: true
+    - name: Configure Nginx as load balancer
+      blockinfile:
+        dest: /etc/nginx/nginx.conf
+        insertafter: "http {"
+        content: |
+          upstream backend {
+              server node2.local:80 weight=5;
+              server node3.local:8080 weight=1;
+          }
+          server {
+              listen 80;
+              server_name node1.local;
+              
+              location / {
+                proxy_pass http://backend;
+              }
+          }
+    - name: Start the Nginx server
+      service:
+        name: nginx
+        state: started
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+- hosts: node2.local
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Install Apache2 on node2.local
+      apt:
+        name: apache2
+        state: present
+    - name: Set up Apache2 homepage
+      copy:
+        content: "qrumnruowvkv"
+        dest: /var/www/html/index.html
+    - name: Restart Apache2
+      service:
+        name: apache2
+        state: restarted
+
+
+- hosts: node3.local
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Install jdk
+      apt:
+        name: default-jdk
+        state: present
+    - name: setup version 9.0.37 of Tomcat
+      get_url:
+        url: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.37/bin/apache-tomcat-9.0.37.tar.gz
+        dest: /usr/local
+    - name: Extract the gz file
+      unarchive:
+        src: /usr/local/apache-tomcat-9.0.37.tar.gz
+        dest: /usr/local
+        remote_src: yes
+      become: true
+    - name: Web server home page Configuration
+      copy:
+        dest: /usr/local/apache-tomcat-9.0.37/webapps/ROOT/index.html
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+          <title>node3.local tomcat server</title>
+          </head>
+          <body>
+          <p>qhrykxeislbu</p>
+          </body>
+          </html>
+    - name: Starting Tomcat Server
+      shell: nohup /usr/local/apache-tomcat-9.0.37/bin/startup.sh
