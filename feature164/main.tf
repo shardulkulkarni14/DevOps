@@ -1,113 +1,117 @@
 terraform {
   required_providers {
-    docker = {
-      source = "kreuzwerker/docker"
-      version = "~> 2.16"
+    null = {
+      source = "hashicorp/null"
     }
   }
 }
 
-provider "docker" {
-  host = "tcp://remote-docker-host:2375"
-}
+provider "null" {}
 
-
-resource "docker_container" "salt" {
-  provider = docker
-  name     = "salt"
-  image    = "ubuntu:22.04"
-  ports {
-    internal = 4505
-    external = 4505
+# Set up Salt Master
+resource "null_resource" "salt_master" {
+  # Use remote-exec to execute commands on the Salt Master
+  provisioner "remote-exec" {
+    inline = [
+      "curl -o bootstrap-salt.sh -L https://bootstrap.saltproject.io",
+      "chmod +x bootstrap-salt.sh",
+      "./bootstrap-salt.sh -P -M -N stable 3005",
+      "service salt-master start",
+      "echo 'auto_accept: True' >> /etc/salt/master",
+      "mkdir -p /var/log/salt/",
+      "echo 'log_level_logfile: debug' >> /etc/salt/master",
+      "service salt-master restart"
+    ]
   }
-  ports {
-    internal = 4506
-    external = 4506
+  connection {
+    # Connect to the Salt Master
+    host     = "salt"
+    type     = "ssh"
+    user     = "root"
+    password = "ubuntu"
   }
-  command = ["sh", "-c", "service ssh start && sleep infinity"]
 }
 
-resource "docker_container" "node1" {
-  provider = docker
-  name     = "node1.local"
-  image    = "ubuntu:22.04"
-  command  = ["sh", "-c", "service ssh start && sleep infinity"]
-}
-
-resource "docker_container" "node2" {
-  provider = docker
-  name     = "node2.local"
-  image    = "ubuntu:22.04"
-  command  = ["sh", "-c", "service ssh start && sleep infinity"]
-}
-
-resource "docker_container" "node3" {
-  provider = docker
-  name     = "node3.local"
-  image    = "ubuntu:22.04"
-  command  = ["sh", "-c", "service ssh start && sleep infinity"]
-}
-
-resource "null_resource" "setup_salt" {
-  triggers = {
-    setup_salt = "${docker_container.salt.name}"
-  }
+# Set up Salt Minion for Node 1
+resource "null_resource" "salt_minion_node1" {
+  depends_on = [null_resource.salt_master]
 
   provisioner "remote-exec" {
     inline = [
-      "salt-master --log-level=critical",
+      "apt-get update",
+      "apt-get install -y curl sudo openssh-server",
+      "locale-gen en_US.UTF-8",
+      "update-locale LANG=en_US.UTF-8",
+      "echo 'Europe/Berlin' > /etc/timezone",
+      "dpkg-reconfigure -f noninteractive tzdata",
+      "echo 'root:ubuntu' | chpasswd",
+      "apt-get install -y salt-minion",
+      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
+      "echo 'id: lsxvax' > /etc/salt/minion.d/id.conf",
+      "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
+      "service salt-minion restart"
     ]
+  }
+  connection {
+    host     = "node1.local"
+    type     = "ssh"
+    user     = "root"
+    password = "ubuntu"
   }
 }
 
-resource "null_resource" "setup_minions" {
-  depends_on = [docker_container.salt]
+# Set up Salt Minion for Node 2
+resource "null_resource" "salt_minion_node2" {
+  depends_on = [null_resource.salt_master]
 
   provisioner "remote-exec" {
     inline = [
-      "salt-key -A -y",
+      "apt-get update",
+      "apt-get install -y curl sudo openssh-server",
+      "locale-gen en_US.UTF-8",
+      "update-locale LANG=en_US.UTF-8",
+      "echo 'Europe/Berlin' > /etc/timezone",
+      "dpkg-reconfigure -f noninteractive tzdata",
+      "echo 'root:ubuntu' | chpasswd",
+      "apt-get install -y salt-minion",
+      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
+      "echo 'id: gcevyt' > /etc/salt/minion.d/id.conf",
+      "echo 'log_level: error' > /etc/salt/minion.d/log_level.conf",
+      "service salt-minion restart"
     ]
+  }
+  connection {
+    host     = "node2.local"
+    type     = "ssh"
+    user     = "root"
+    password = "ubuntu"
   }
 }
 
-resource "null_resource" "configure_minion_node1" {
-  depends_on = [null_resource.setup_minions]
+# Set up Salt Minion for Node 3
+resource "null_resource" "salt_minion_node3" {
+  depends_on = [null_resource.salt_master]
 
   provisioner "remote-exec" {
     inline = [
-      "salt-key -A -y",
-      "salt-key -L",
-      "salt-key -A -y",
-      "salt-call --local --id lsxvax grains.setval roles 'minion_node1'",
-      "salt-call --local --id lsxvax state.highstate",
-      "salt-call --local --id lsxvax config.option 'log_level' 'critical'",
-      "systemctl restart salt-minion",
+      "apt-get update",
+      "apt-get install -y curl sudo openssh-server",
+      "locale-gen en_US.UTF-8",
+      "update-locale LANG=en_US.UTF-8",
+      "echo 'Europe/Berlin' > /etc/timezone",
+      "dpkg-reconfigure -f noninteractive tzdata",
+      "echo 'root:ubuntu' | chpasswd",
+      "apt-get install -y salt-minion",
+      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
+      "echo 'id: foawji' > /etc/salt/minion.d/id.conf",
+      "echo 'log_level: warning' > /etc/salt/minion.d/log_level.conf",
+      "service salt-minion restart"
     ]
   }
-}
-
-resource "null_resource" "configure_minion_node2" {
-  depends_on = [null_resource.setup_minions]
-
-  provisioner "remote-exec" {
-    inline = [
-      "salt-call --local --id gcevyt grains.setval roles 'minion_node2'",
-      "salt-call --local --id gcevyt state.highstate",
-      "salt-call --local --id gcevyt config.option 'log_level' 'error'",
-      "systemctl restart salt-minion",
-    ]
-  }
-}
-
-resource "null_resource" "configure_minion_node3" {
-  depends_on = [null_resource.setup_minions]
-
-  provisioner "remote-exec" {
-    inline = [
-      "salt-call --local --id foawji grains.setval roles 'minion_node3'",
-      "salt-call --local --id foawji state.highstate",
-      "salt-call --local --id foawji config.option 'log_level' 'warning'",
-      "systemctl restart salt-minion",
-    ]
+  connection {
+    host     = "node3.local"
+    type     = "ssh"
+    user     = "root"
+    password = "ubuntu"
   }
 }
