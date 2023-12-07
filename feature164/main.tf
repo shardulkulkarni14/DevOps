@@ -2,9 +2,15 @@ provider "docker" {
   host    = "unix:///var/run/docker.sock"
 }
 
+provider "docker" {
+  alias   = "kreuzwerker"
+  version = "~> 2.16"
+}
+
 resource "docker_container" "salt" {
-  name  = "salt"
-  image = "ubuntu:22.04"
+  provider = docker.kreuzwerker
+  name     = "salt"
+  image    = "ubuntu:22.04"
   ports {
     internal = 4505
     external = 4505
@@ -17,21 +23,24 @@ resource "docker_container" "salt" {
 }
 
 resource "docker_container" "node1" {
-  name  = "node1.local"
-  image = "ubuntu:22.04"
-  command = ["sh", "-c", "service ssh start && sleep infinity"]
+  provider = docker.kreuzwerker
+  name     = "node1.local"
+  image    = "ubuntu:22.04"
+  command  = ["sh", "-c", "service ssh start && sleep infinity"]
 }
 
 resource "docker_container" "node2" {
-  name  = "node2.local"
-  image = "ubuntu:22.04"
-  command = ["sh", "-c", "service ssh start && sleep infinity"]
+  provider = docker.kreuzwerker
+  name     = "node2.local"
+  image    = "ubuntu:22.04"
+  command  = ["sh", "-c", "service ssh start && sleep infinity"]
 }
 
 resource "docker_container" "node3" {
-  name  = "node3.local"
-  image = "ubuntu:22.04"
-  command = ["sh", "-c", "service ssh start && sleep infinity"]
+  provider = docker.kreuzwerker
+  name     = "node3.local"
+  image    = "ubuntu:22.04"
+  command  = ["sh", "-c", "service ssh start && sleep infinity"]
 }
 
 resource "null_resource" "setup_salt" {
