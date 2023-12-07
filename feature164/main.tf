@@ -1,16 +1,9 @@
-terraform {
-  required_providers {
-    null = {
-      source = "hashicorp/null"
-    }
-  }
+provider "null" {
+  
 }
 
-provider "null" {}
+resource "null_resource" "salt" {
 
-# Set up Salt Master
-resource "null_resource" "salt_master" {
-  # Use remote-exec to execute commands on the Salt Master
   provisioner "remote-exec" {
     inline = [
       "curl -o bootstrap-salt.sh -L https://bootstrap.saltproject.io",
@@ -24,7 +17,6 @@ resource "null_resource" "salt_master" {
     ]
   }
   connection {
-    # Connect to the Salt Master
     host     = "salt"
     type     = "ssh"
     user     = "root"
@@ -32,24 +24,24 @@ resource "null_resource" "salt_master" {
   }
 }
 
-# Set up Salt Minion for Node 1
-resource "null_resource" "salt_minion_node1" {
-  depends_on = [null_resource.salt_master]
 
+
+
+resource "null_resource" "node1" {
   provisioner "remote-exec" {
     inline = [
-      "apt-get update",
-      "apt-get install -y curl sudo openssh-server",
-      "locale-gen en_US.UTF-8",
-      "update-locale LANG=en_US.UTF-8",
-      "echo 'Europe/Berlin' > /etc/timezone",
-      "dpkg-reconfigure -f noninteractive tzdata",
-      "echo 'root:ubuntu' | chpasswd",
-      "apt-get install -y salt-minion",
-      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
-      "echo 'id: lsxvax' > /etc/salt/minion.d/id.conf",
-      "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion restart"
+    "apt-get update",
+    "apt-get install -y curl sudo openssh-server",
+    "locale-gen en_US.UTF-8",
+    "update-locale LANG=en_US.UTF-8",
+    "echo 'Europe/Berlin' > /etc/timezone",
+    "dpkg-reconfigure -f noninteractive tzdata",
+    "echo 'root:ubuntu' | chpasswd",
+    "apt-get install -y salt-minion",
+    "echo 'master: salt' > /etc/salt/minion.d/master.conf",
+    "echo 'id: lsxvax' > /etc/salt/minion.d/id.conf",
+    "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
+    "service salt-minion restart"
     ]
   }
   connection {
@@ -60,27 +52,24 @@ resource "null_resource" "salt_minion_node1" {
   }
 }
 
-# Set up Salt Minion for Node 2
-resource "null_resource" "salt_minion_node2" {
-  depends_on = [null_resource.salt_master]
-
-  provisioner "remote-exec" {
-    inline = [
-      "apt-get update",
-      "apt-get install -y curl sudo openssh-server",
-      "locale-gen en_US.UTF-8",
-      "update-locale LANG=en_US.UTF-8",
-      "echo 'Europe/Berlin' > /etc/timezone",
-      "dpkg-reconfigure -f noninteractive tzdata",
-      "echo 'root:ubuntu' | chpasswd",
-      "apt-get install -y salt-minion",
-      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
-      "echo 'id: gcevyt' > /etc/salt/minion.d/id.conf",
-      "echo 'log_level: error' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion restart"
-    ]
-  }
-  connection {
+resource "null_resource" "node2" {
+    provisioner "remote-exec" {
+        inline = [
+        "apt-get update",
+        "apt-get install -y curl sudo openssh-server",
+        "locale-gen en_US.UTF-8",
+        "update-locale LANG=en_US.UTF-8",
+        "echo 'Europe/Berlin' > /etc/timezone",
+        "dpkg-reconfigure -f noninteractive tzdata",
+        "echo 'root:ubuntu' | chpasswd",
+        "apt-get install -y salt-minion",
+        "echo 'master: salt' > /etc/salt/minion.d/master.conf",
+        "echo 'id: gcevyt' > /etc/salt/minion.d/id.conf",
+        "echo 'log_level: error' > /etc/salt/minion.d/log_level.conf",
+        "service salt-minion restart"
+        ]
+    }
+    connection {
     host     = "node2.local"
     type     = "ssh"
     user     = "root"
@@ -88,30 +77,31 @@ resource "null_resource" "salt_minion_node2" {
   }
 }
 
-# Set up Salt Minion for Node 3
-resource "null_resource" "salt_minion_node3" {
-  depends_on = [null_resource.salt_master]
-
-  provisioner "remote-exec" {
-    inline = [
-      "apt-get update",
-      "apt-get install -y curl sudo openssh-server",
-      "locale-gen en_US.UTF-8",
-      "update-locale LANG=en_US.UTF-8",
-      "echo 'Europe/Berlin' > /etc/timezone",
-      "dpkg-reconfigure -f noninteractive tzdata",
-      "echo 'root:ubuntu' | chpasswd",
-      "apt-get install -y salt-minion",
-      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
-      "echo 'id: foawji' > /etc/salt/minion.d/id.conf",
-      "echo 'log_level: warning' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion restart"
-    ]
-  }
-  connection {
+resource "null_resource" "node3" {
+    provisioner "remote-exec" {
+        inline = [
+        "apt-get update",
+        "apt-get install -y curl sudo openssh-server",
+        "locale-gen en_US.UTF-8",
+        "update-locale LANG=en_US.UTF-8",
+        "echo 'Europe/Berlin' > /etc/timezone",
+        "dpkg-reconfigure -f noninteractive tzdata",
+        "echo 'root:ubuntu' | chpasswd",
+        "apt-get install -y salt-minion",
+        "echo 'master: salt' > /etc/salt/minion.d/master.conf",
+        "echo 'id: foawji' > /etc/salt/minion.d/id.conf",
+        "echo 'log_level: warning' > /etc/salt/minion.d/log_level.conf",
+        "service salt-minion restart"
+        ]
+    }
+    connection {
     host     = "node3.local"
     type     = "ssh"
     user     = "root"
     password = "ubuntu"
   }
 }
+
+
+
+
