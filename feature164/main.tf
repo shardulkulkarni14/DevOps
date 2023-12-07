@@ -1,14 +1,18 @@
+terraform {
+  required_providers {
+    docker = {
+      source = "kreuzwerker/docker"
+      version = "~> 2.16"
+    }
+  }
+}
+
 provider "docker" {
   host    = "unix:///var/run/docker.sock"
 }
 
-provider "docker" {
-  alias   = "kreuzwerker"
-  version = "~> 2.16"
-}
-
 resource "docker_container" "salt" {
-  provider = docker.kreuzwerker
+  provider = docker
   name     = "salt"
   image    = "ubuntu:22.04"
   ports {
@@ -23,21 +27,21 @@ resource "docker_container" "salt" {
 }
 
 resource "docker_container" "node1" {
-  provider = docker.kreuzwerker
+  provider = docker
   name     = "node1.local"
   image    = "ubuntu:22.04"
   command  = ["sh", "-c", "service ssh start && sleep infinity"]
 }
 
 resource "docker_container" "node2" {
-  provider = docker.kreuzwerker
+  provider = docker
   name     = "node2.local"
   image    = "ubuntu:22.04"
   command  = ["sh", "-c", "service ssh start && sleep infinity"]
 }
 
 resource "docker_container" "node3" {
-  provider = docker.kreuzwerker
+  provider = docker
   name     = "node3.local"
   image    = "ubuntu:22.04"
   command  = ["sh", "-c", "service ssh start && sleep infinity"]
