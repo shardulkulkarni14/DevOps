@@ -8,8 +8,9 @@ terraform {
 }
 
 provider "docker" {
-  host    = "unix:///var/run/docker.sock"
+  host = "tcp://remote-docker-host:2375"
 }
+
 
 resource "docker_container" "salt" {
   provider = docker
