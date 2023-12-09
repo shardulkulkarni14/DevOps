@@ -19,7 +19,7 @@ resource "null_resource" "salt_master" {
       "service salt-master start",
       "echo 'auto_accept: True' >> /etc/salt/master",
       "mkdir -p /var/log/salt/",
-      "echo 'log_level_logfile: debug' >> /etc/salt/master",
+      "echo 'log_level_logfile: critical' >> /etc/salt/master",
       "service salt-master restart"
     ]
   }
