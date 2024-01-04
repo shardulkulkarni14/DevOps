@@ -20,7 +20,8 @@ resource "null_resource" "salt_master" {
       "echo 'auto_accept: True' >> /etc/salt/master",
       "mkdir -p /var/log/salt/",
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
-      "service salt-master restart"
+      "pkill salt-master",
+      "service salt-master start"
     ]
   }
   connection {
@@ -50,7 +51,8 @@ resource "null_resource" "salt_minion_node1" {
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: lsxvax' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion restart"
+      "pkill salt-minion"
+      "service salt-minion start"
     ]
   }
   connection {
@@ -78,7 +80,8 @@ resource "null_resource" "salt_minion_node2" {
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: gcevyt' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: error' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion restart"
+      "pkill salt-minion"
+      "service salt-minion start"
     ]
   }
   connection {
@@ -106,7 +109,8 @@ resource "null_resource" "salt_minion_node3" {
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: foawji' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: warning' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion restart"
+      "pkill salt-minion"
+      "service salt-minion start"
     ]
   }
   connection {
