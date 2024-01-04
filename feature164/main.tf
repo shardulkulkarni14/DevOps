@@ -21,7 +21,7 @@ resource "null_resource" "salt_master" {
       "mkdir -p /var/log/salt/",
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
       "pkill salt-master",
-      "service salt-master start"
+      "service salt-master start",
       "grep "auto_accept:" /etc/salt/master"
     ]
   }
