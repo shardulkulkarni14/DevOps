@@ -21,8 +21,7 @@ resource "null_resource" "salt_master" {
       "mkdir -p /var/log/salt/",
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
       "pkill salt-master",
-      "service salt-master start",
-      "grep "auto_accept:" "/etc/salt/master""
+      "service salt-master start"
     ]
   }
   connection {
@@ -53,8 +52,7 @@ resource "null_resource" "salt_minion_node1" {
       "echo 'id: lsxvax' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
       "pkill salt-minion",
-      "service salt-minion start",
-      "grep "master:" "/etc/salt/minion.d/master.conf""
+      "service salt-minion start"
     ]
   }
   connection {
