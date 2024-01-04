@@ -17,7 +17,7 @@ resource "null_resource" "salt_master" {
       "chmod +x bootstrap-salt.sh",
       "./bootstrap-salt.sh -P -M -N stable 3005",
       "service salt-master start",
-      "echo 'auto_accept: True' >> /etc/salt/master",
+      "echo '#auto_accept: True' >> /etc/salt/master",
       "mkdir -p /var/log/salt/",
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
       "pkill salt-master",
