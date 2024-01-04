@@ -51,7 +51,7 @@ resource "null_resource" "salt_minion_node1" {
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: lsxvax' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
-      "pkill salt-minion"
+      "pkill salt-minion",
       "service salt-minion start"
     ]
   }
@@ -80,7 +80,7 @@ resource "null_resource" "salt_minion_node2" {
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: gcevyt' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: error' > /etc/salt/minion.d/log_level.conf",
-      "pkill salt-minion"
+      "pkill salt-minion",
       "service salt-minion start"
     ]
   }
@@ -109,7 +109,7 @@ resource "null_resource" "salt_minion_node3" {
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: foawji' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: warning' > /etc/salt/minion.d/log_level.conf",
-      "pkill salt-minion"
+      "pkill salt-minion",
       "service salt-minion start"
     ]
   }
