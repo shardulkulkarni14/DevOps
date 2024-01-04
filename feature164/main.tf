@@ -22,7 +22,7 @@ resource "null_resource" "salt_master" {
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
       "pkill salt-master",
       "service salt-master start",
-      "grep "auto_accept:" /etc/salt/master"
+      "grep "auto_accept:" "/etc/salt/master""
     ]
   }
   connection {
@@ -54,7 +54,7 @@ resource "null_resource" "salt_minion_node1" {
       "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
       "pkill salt-minion",
       "service salt-minion start",
-      "grep "master:" /etc/salt/minion.d/master.conf"
+      "grep "master:" "/etc/salt/minion.d/master.conf""
     ]
   }
   connection {
