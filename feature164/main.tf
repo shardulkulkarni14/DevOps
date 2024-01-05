@@ -20,7 +20,7 @@ resource "null_resource" "salt" {
       "echo 'auto_accept: True' >> /etc/salt/master",
       "mkdir -p /var/log/salt/",
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
-      "pkill salt-master"
+      "pkill salt-master",
       "service salt-master restart",
 
       "sudo salt-key -A -y"
