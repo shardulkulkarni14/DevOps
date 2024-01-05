@@ -9,7 +9,7 @@ terraform {
 provider "null" {}
 
 # Set up Salt Master
-resource "null_resource" "salt_master" {
+resource "null_resource" "salt" {
   # Use remote-exec to execute commands on the Salt Master
   provisioner "remote-exec" {
     inline = [
@@ -21,7 +21,7 @@ resource "null_resource" "salt_master" {
       "mkdir -p /var/log/salt/",
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
       "sudo salt-key -A -y",
-      "service salt-master start"
+      "service salt-master restart"
 
     ]
   }
@@ -37,7 +37,7 @@ resource "null_resource" "salt_master" {
 
 # Set up Salt Minion for Node 1
 resource "null_resource" "salt_minion_node1" {
-  depends_on = [null_resource.salt_master]
+  depends_on = [null_resource.salt]
 
   provisioner "remote-exec" {
     inline = [
@@ -50,7 +50,7 @@ resource "null_resource" "salt_minion_node1" {
       "echo 'root:ubuntu' | chpasswd",
       "service salt-minion start",
       "apt-get install -y salt-minion",
-      "echo 'master: salt_master' > /etc/salt/minion.d/master.conf",
+      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: lsxvax' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
       "service salt-minion restart"
@@ -66,7 +66,7 @@ resource "null_resource" "salt_minion_node1" {
 
 # Set up Salt Minion for Node 2
 resource "null_resource" "salt_minion_node2" {
-  depends_on = [null_resource.salt_master]
+  depends_on = [null_resource.salt]
 
   provisioner "remote-exec" {
     inline = [
@@ -79,7 +79,7 @@ resource "null_resource" "salt_minion_node2" {
       "echo 'root:ubuntu' | chpasswd",
       "service salt-minion start",
       "apt-get install -y salt-minion",
-      "echo 'master: salt_master' > /etc/salt/minion.d/master.conf",
+      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: gcevyt' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: error' > /etc/salt/minion.d/log_level.conf",
       "service salt-minion restart"
@@ -95,7 +95,7 @@ resource "null_resource" "salt_minion_node2" {
 
 # Set up Salt Minion for Node 3
 resource "null_resource" "salt_minion_node3" {
-  depends_on = [null_resource.salt_master]
+  depends_on = [null_resource.salt]
 
   provisioner "remote-exec" {
     inline = [
@@ -108,7 +108,7 @@ resource "null_resource" "salt_minion_node3" {
       "echo 'root:ubuntu' | chpasswd",
       "service salt-minion start",
       "apt-get install -y salt-minion",
-      "echo 'master: salt_master' > /etc/salt/minion.d/master.conf",
+      "echo 'master: salt' > /etc/salt/minion.d/master.conf",
       "echo 'id: foawji' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: warning' > /etc/salt/minion.d/log_level.conf",
       "service salt-minion restart"
