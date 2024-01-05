@@ -21,9 +21,9 @@ resource "null_resource" "salt" {
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
       "pkill salt-master",
       "service salt-master restart",
-      "sudo salt-key -lsxvax -y",
-      "sudo salt-key -gcevyt -y",
-      "sudo salt-key -foawji -y"
+      "sudo salt-key -a lsxvax -y",
+      "sudo salt-key -a gcevyt -y",
+      "sudo salt-key -a foawji -y"
     ]
   connection {
     # Connect to the Salt Master
