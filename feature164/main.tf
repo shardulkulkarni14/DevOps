@@ -17,7 +17,6 @@ resource "null_resource" "salt_master" {
       "chmod +x bootstrap-salt.sh",
       "./bootstrap-salt.sh -P -M -N stable 3005",
       "service salt-master start",
-      "sed -i '/#auto_accept: False/d' /etc/salt/master", 
       "echo 'auto_accept: True' >> /etc/salt/master",
       "mkdir -p /var/log/salt/",
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
@@ -49,11 +48,12 @@ resource "null_resource" "salt_minion_node1" {
       "echo 'Europe/Berlin' > /etc/timezone",
       "dpkg-reconfigure -f noninteractive tzdata",
       "echo 'root:ubuntu' | chpasswd",
+      "service salt-minion start",
       "apt-get install -y salt-minion",
       "echo 'master: salt_master' > /etc/salt/minion.d/master.conf",
       "echo 'id: lsxvax' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: critical' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion start"
+      "service salt-minion restart"
     ]
   }
   connection {
@@ -77,11 +77,12 @@ resource "null_resource" "salt_minion_node2" {
       "echo 'Europe/Berlin' > /etc/timezone",
       "dpkg-reconfigure -f noninteractive tzdata",
       "echo 'root:ubuntu' | chpasswd",
+      "service salt-minion start",
       "apt-get install -y salt-minion",
       "echo 'master: salt_master' > /etc/salt/minion.d/master.conf",
       "echo 'id: gcevyt' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: error' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion start"
+      "service salt-minion restart"
     ]
   }
   connection {
@@ -105,11 +106,12 @@ resource "null_resource" "salt_minion_node3" {
       "echo 'Europe/Berlin' > /etc/timezone",
       "dpkg-reconfigure -f noninteractive tzdata",
       "echo 'root:ubuntu' | chpasswd",
+      "service salt-minion start",
       "apt-get install -y salt-minion",
       "echo 'master: salt_master' > /etc/salt/minion.d/master.conf",
       "echo 'id: foawji' > /etc/salt/minion.d/id.conf",
       "echo 'log_level: warning' > /etc/salt/minion.d/log_level.conf",
-      "service salt-minion start"
+      "service salt-minion restart"
     ]
   }
   connection {
