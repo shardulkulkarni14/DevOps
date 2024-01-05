@@ -20,7 +20,9 @@ resource "null_resource" "salt" {
       "echo 'auto_accept: True' >> /etc/salt/master",
       "mkdir -p /var/log/salt/",
       "echo 'log_level_logfile: critical' >> /etc/salt/master",
+      "pkill salt-master"
       "service salt-master restart",
+
       "sudo salt-key -A -y"
     ]
   }
@@ -40,13 +42,6 @@ resource "null_resource" "salt_minion_node1" {
 
   provisioner "remote-exec" {
     inline = [
-      "apt-get update",
-      "apt-get install -y curl sudo openssh-server",
-      "locale-gen en_US.UTF-8",
-      "update-locale LANG=en_US.UTF-8",
-      "echo 'Europe/Berlin' > /etc/timezone",
-      "dpkg-reconfigure -f noninteractive tzdata",
-      "echo 'root:ubuntu' | chpasswd",
       "service salt-minion start",
       "apt-get install -y salt-minion",
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
@@ -69,13 +64,6 @@ resource "null_resource" "salt_minion_node2" {
 
   provisioner "remote-exec" {
     inline = [
-      "apt-get update",
-      "apt-get install -y curl sudo openssh-server",
-      "locale-gen en_US.UTF-8",
-      "update-locale LANG=en_US.UTF-8",
-      "echo 'Europe/Berlin' > /etc/timezone",
-      "dpkg-reconfigure -f noninteractive tzdata",
-      "echo 'root:ubuntu' | chpasswd",
       "service salt-minion start",
       "apt-get install -y salt-minion",
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
@@ -98,13 +86,6 @@ resource "null_resource" "salt_minion_node3" {
 
   provisioner "remote-exec" {
     inline = [
-      "apt-get update",
-      "apt-get install -y curl sudo openssh-server",
-      "locale-gen en_US.UTF-8",
-      "update-locale LANG=en_US.UTF-8",
-      "echo 'Europe/Berlin' > /etc/timezone",
-      "dpkg-reconfigure -f noninteractive tzdata",
-      "echo 'root:ubuntu' | chpasswd",
       "service salt-minion start",
       "apt-get install -y salt-minion",
       "echo 'master: salt' > /etc/salt/minion.d/master.conf",
