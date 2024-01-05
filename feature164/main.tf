@@ -35,9 +35,7 @@ resource "null_resource" "salt" {
 
 
 # Set up Salt Minion for Node 1
-resource "null_resource" "salt_minion_node1" {
-  depends_on = [null_resource.salt]
-
+resource "null_resource" "node1" {
   provisioner "remote-exec" {
     inline = [
       "apt-get install -y salt-minion",
@@ -58,9 +56,7 @@ resource "null_resource" "salt_minion_node1" {
 }
 
 # Set up Salt Minion for Node 2
-resource "null_resource" "salt_minion_node2" {
-  depends_on = [null_resource.salt]
-
+resource "null_resource" "node2" {
   provisioner "remote-exec" {
     inline = [
       "apt-get install -y salt-minion",
@@ -80,9 +76,7 @@ resource "null_resource" "salt_minion_node2" {
 }
 
 # Set up Salt Minion for Node 3
-resource "null_resource" "salt_minion_node3" {
-  depends_on = [null_resource.salt]
-
+resource "null_resource" "node3" {
   provisioner "remote-exec" {
     inline = [
       "apt-get install -y salt-minion",
