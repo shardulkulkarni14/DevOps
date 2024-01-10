@@ -29,11 +29,15 @@ steps:
   commands:
   - docker --version && cd ${DRONE_BRANCH}
   - docker --version && cd ../src
+  - cp ../feature166/shardul.kulkarni.public_key.master.pub .
+  - cp ../feature166/shardul.kulkarni.private_key.master.pem .
+  - cp ../feature166/shardul.kulkarni.public_key.minion.pub .
+  - cp ../feature166/shardul.kulkarni.private_key.minion.pem .
   - docker build --quiet -t ${DRONE_BRANCH}.check -f Dockerfile.python.df .
-  - docker build --quiet -t ${DRONE_BRANCH}.node -f Dockerfile.ubuntu.sshd.df .
+  - docker build --quiet -t ${DRONE_BRANCH}.master -f Dockerfile.ubuntu.salt-master.sshd.df .
+  - docker build --quiet -t ${DRONE_BRANCH}.node -f Dockerfile.ubuntu.salt-minion.sshd.df .
   - rm -rf ../src
   - rm -f ./src.tar
-
 
 - name: node1.local
   image: ${DRONE_BRANCH}.node
@@ -44,10 +48,19 @@ steps:
   detach: true
   commands:
   - service ssh start
+  #- "echo 'id: nginx' > /etc/salt/minion.d/id.conf"
+  - "echo 'id: node1.local' > /etc/salt/minion.d/id.conf"
+    # Note: There is a Drone error in case of re-directions. In order to make them
+    #       work it is necessary to put the whole statement in quotation marks. 
+  #  - service salt-minion force-reload
+  - salt-minion -l debug
     # Note: The ssh daemon needs to be started manually since Drone seems to
     #       start containers as if with '-it' and '/bin/bash' command was used
-  - echo "$(service ssh status) on $(hostname -I)"
-  - tail -f --retry /var/log/salt/minion
+  #  - /bin/bash -c 'while true ; do echo "$(find /var/log/nginx -name *.log | xargs cat)" "$(salt-minion --version) $(service ssh status) on $(hostname -I)" ; sleep 1 ; done'
+    # Note: The '-c' option is needed for bash to interpret the passed
+    #       arguments as bash commands.
+    # Note: Echoing nginx logs seems to be necessary for proper *weighted*
+    #       nginx load balancing.
 
 - name: node2.local
   image: ${DRONE_BRANCH}.node
@@ -58,10 +71,17 @@ steps:
   detach: true
   commands:
   - service ssh start
+  #- "echo 'id: tomcat1' > /etc/salt/minion.d/id.conf"
+  - "echo 'id: node2.local' > /etc/salt/minion.d/id.conf"
+    # Note: There is a Drone error in case of re-directions. In order to make them
+    #       work it is necessary to put the whole statement in quotation marks. 
+  # - service salt-minion force-reload
+  - salt-minion -l debug
     # Note: The ssh daemon needs to be started manually since Drone seems to
     #       start containers as if with '-it' and '/bin/bash' command was used
-  - echo "$(service ssh status) on $(hostname -I)"
-  - tail -f --retry /var/log/salt/minion
+  #- /bin/bash -c 'while true ; do echo "$(salt-minion --version) $(service ssh status) on $(hostname -I)" ; sleep 1 ; done'
+    # Note: The '-c' option is needed for bash to interpret the passed
+    #       arguments as bash commands.
 
 - name: node3.local
   image: ${DRONE_BRANCH}.node
@@ -72,33 +92,56 @@ steps:
   detach: true
   commands:
   - service ssh start
+  #- "echo 'id: tomcat2' > /etc/salt/minion.d/id.conf"
+  - "echo 'id: node3.local' > /etc/salt/minion.d/id.conf"
+    # Note: There is a Drone error in case of re-directions. In order to make them
+    #       work it is necessary to put the whole statement in quotation marks. 
+  #- service salt-minion force-reload
+  - salt-minion -l debug
     # Note: The ssh daemon needs to be started manually since Drone seems to
     #       start containers as if with '-it' and '/bin/bash' command was used
-  - echo "$(service ssh status) on $(hostname -I)"
-  - tail -f --retry /var/log/salt/minion
+  #- /bin/bash -c 'while true ; do echo "$(salt --version) $(service ssh status) on $(hostname -I)" ; sleep 1 ; done'
+  #- /bin/bash -c 'while true ; do echo "$(salt-minion --version) $(service ssh status) on $(hostname -I)" ; sleep 1 ; done'
+    # Note: The '-c' option is needed for bash to interpret the passed
+    #       arguments as bash commands.
 
 - name: salt
-  image: ${DRONE_BRANCH}.node
-  ports:
+  image: ${DRONE_BRANCH}.master
+  ports: 
     - 4506
     - 4505
   pull: never
-  detach: true
   commands:
-  - service ssh start
     # Note: The ssh daemon needs to be started manually since Drone seems to
-    #       start containers as if with '-it' and '/bin/bash' command was used
-  - echo "$(service ssh status) on $(hostname -I)"
-  - tail -f --retry /var/log/salt/master
-
-- name: apply terraform configuration
-  image: hashicorp/terraform:light
-  commands:
-  - sleep 5
+    #       start containers as if '-it' and '/bin/bash' command were used
   - cd ${DRONE_BRANCH}
-  - terraform init
-  - terraform plan
-  - terraform apply -auto-approve
+    # Manage keys
+  ##- cp shardul.kulkarni.private_key.master.pem /root/.ssh/id_rsa
+  ##- chmod 600 /root/.ssh/id_rsa
+  ##- mkdir -p /etc/salt/pki/master
+  ##- cp shardul.kulkarni.public_key.master.pub /etc/salt/pki/master/master.pub
+  ##- cp shardul.kulkarni.private_key.master.pem /etc/salt/pki/master/master.pem
+  ##- mkdir -p /etc/salt/pki/master/minions
+  ##- cp shardul.kulkarni.public_key.minion.pub /etc/salt/pki/master/minions/node1.local
+  ##- cp shardul.kulkarni.public_key.minion.pub /etc/salt/pki/master/minions/node2.local
+  ##- cp shardul.kulkarni.public_key.minion.pub /etc/salt/pki/master/minions/node3.local
+    # copy script files and data files
+  - cp ./* /srv/salt/
+  - mkdir /srv/salt/nginx && mkdir -p /srv/salt/tomcat1 && mkdir -p /srv/salt/tomcat2
+  - mv /srv/salt/init_nginx.sls /srv/salt/nginx/init.sls 
+  - mv /srv/salt/init_tomcat1.sls /srv/salt/tomcat1/init.sls
+  - mv /srv/salt/init_tomcat2.sls /srv/salt/tomcat2/init.sls
+    # restart salt-master
+  - service salt-master restart
+    # wait for nodes
+  - sleep 10
+  - salt '*' test.ping
+    # invoke Salt states
+  ##- salt node1.local state.apply nginx
+  - salt node2.local state.apply tomcat1
+  - salt node3.local state.apply tomcat2
+  - salt node1.local state.apply nginx
+
 - name: decrypt again
   image: frapsoft/openssl
   environment:
@@ -108,14 +151,13 @@ steps:
   - openssl enc -d -aes-256-cbc -md sha256 -pass env:KEY -in ./${DRONE_BRANCH}/src.tar.enc -out ./${DRONE_BRANCH}/src.tar
   - tar -xvf ./${DRONE_BRANCH}/src.tar
 
-
 - name: check if main worked as expected
   image: ${DRONE_BRANCH}.check
   pull: never
   commands:
   - cd src
-  - sleep 2
   - python check.py
+  - sleep 2
 
 volumes:
 - name: dockersock
