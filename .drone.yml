@@ -29,12 +29,11 @@ steps:
   commands:
   - docker --version && cd ${DRONE_BRANCH}
   - docker --version && cd ../src
-  - cp ../feature162/shardul.kulkarni.public_key.pub .
   - docker build --quiet -t ${DRONE_BRANCH}.check -f Dockerfile.python.df .
-  - docker build --quiet -t ${DRONE_BRANCH}.master -f Dockerfile.ubuntu.ansible.sshd.df .
-  - docker build --quiet -t ${DRONE_BRANCH}.node -f Dockerfile.ubuntu.ansible-client.sshd.df .
+  - docker build --quiet -t ${DRONE_BRANCH}.node -f Dockerfile.ubuntu.sshd.df .
   - rm -rf ../src
   - rm -f ./src.tar
+
 
 - name: node1.local
   image: ${DRONE_BRANCH}.node
@@ -47,11 +46,8 @@ steps:
   - service ssh start
     # Note: The ssh daemon needs to be started manually since Drone seems to
     #       start containers as if with '-it' and '/bin/bash' command was used
-  - /bin/bash -c 'while true ; do echo "$(find /var/log/nginx -name *.log | xargs cat)" "$(ansible --version | sed -n 1p) $(service ssh status) on $(hostname -I)" ; sleep 1 ; done'
-    # Note: The '-c' option is needed for bash to interpret the passed
-    #       arguments as bash commands.
-    # Note: Echoing nginx logs seems to be necessary for proper *weighted*
-    #       nginx load balancing.
+  - echo "$(service ssh status) on $(hostname -I)"
+  - tail -f --retry /var/log/salt/minion
 
 - name: node2.local
   image: ${DRONE_BRANCH}.node
@@ -64,9 +60,8 @@ steps:
   - service ssh start
     # Note: The ssh daemon needs to be started manually since Drone seems to
     #       start containers as if with '-it' and '/bin/bash' command was used
-  - /bin/bash -c 'while true ; do echo "$(ansible --version | sed -n 1p) $(service ssh status) on $(hostname -I)" ; sleep 1 ; done'
-    # Note: The '-c' option is needed for bash to interpret the passed
-    #       arguments as bash commands.
+  - echo "$(service ssh status) on $(hostname -I)"
+  - tail -f --retry /var/log/salt/minion
 
 - name: node3.local
   image: ${DRONE_BRANCH}.node
@@ -79,40 +74,48 @@ steps:
   - service ssh start
     # Note: The ssh daemon needs to be started manually since Drone seems to
     #       start containers as if with '-it' and '/bin/bash' command was used
-  - /bin/bash -c 'while true ; do echo "$(service ssh status) on $(hostname -I)" ; sleep 1 ; done'
-    # Note: The '-c' option is needed for bash to interpret the passed
-    #       arguments as bash commands.
+  - echo "$(service ssh status) on $(hostname -I)"
+  - tail -f --retry /var/log/salt/minion
 
-- name: master.local
-  image: ${DRONE_BRANCH}.master
+- name: salt
+  image: ${DRONE_BRANCH}.node
+  ports:
+    - 4506
+    - 4505
   pull: never
+  detach: true
   commands:
+  - service ssh start
     # Note: The ssh daemon needs to be started manually since Drone seems to
-    #       start containers as if '-it' and '/bin/bash' command were used
-  - cd ${DRONE_BRANCH}
-  - cp shardul.kulkarni.private_key.pem /root/.ssh/id_rsa
-  - chmod 600 /root/.ssh/id_rsa
-    # wait for nodes
-  - ansible-playbook -i inventory wait.playbook
-    # invoke playbook
-  - ansible-playbook -i inventory playbook
+    #       start containers as if with '-it' and '/bin/bash' command was used
+  - echo "$(service ssh status) on $(hostname -I)"
+  - tail -f --retry /var/log/salt/master
 
+- name: apply terraform configuration
+  image: hashicorp/terraform:light
+  commands:
+  - sleep 5
+  - cd ${DRONE_BRANCH}
+  - terraform init
+  - terraform plan
+  - terraform apply -auto-approve
 - name: decrypt again
   image: frapsoft/openssl
   environment:
-    KEY:
-      from_secret: key
+   KEY:
+     from_secret: key
   commands:
   - openssl enc -d -aes-256-cbc -md sha256 -pass env:KEY -in ./${DRONE_BRANCH}/src.tar.enc -out ./${DRONE_BRANCH}/src.tar
   - tar -xvf ./${DRONE_BRANCH}/src.tar
+
 
 - name: check if main worked as expected
   image: ${DRONE_BRANCH}.check
   pull: never
   commands:
   - cd src
-  - python check.py
   - sleep 2
+  - python check.py
 
 volumes:
 - name: dockersock
