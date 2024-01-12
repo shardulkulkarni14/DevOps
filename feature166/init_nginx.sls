@@ -1,13 +1,13 @@
 # init_nginx.sls
 
-nginx-installation:
+nginx:
   pkg.installed:
     - name: nginx
 
 nginx-configuration:
   file.managed:
     - name: /etc/nginx/conf.d/load-balancer.conf
-    - source: salt://nginx/load-balancer.conf
+    - source: salt://load-balancer.conf
     - makedirs: true
     - require:
       - pkg: nginx
