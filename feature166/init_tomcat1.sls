@@ -2,7 +2,7 @@
 tomcat1-installation:
   pkg.installed:
     - name: openjdk-11-jre
-    - fromrepo: ubuntu    # Use the correct repository name for your Ubuntu version
+    - fromrepo: ubuntu
 
 tomcat1-setup:
   cmd.run:
@@ -13,6 +13,10 @@ tomcat1-setup:
         echo 'jqrgntsqbfwz' > /usr/local/tomcat1/webapps/ROOT/index.html
         chown -R root:root /usr/local/tomcat1
         chmod -R 755 /usr/local/tomcat1
+        echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> /usr/local/tomcat1/bin/setenv.sh
+        echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /usr/local/tomcat1/bin/setenv.sh
+        echo 'export CATALINA_HOME=/usr/local/apache-tomcat-9.0.35' >> /usr/local/tomcat1/bin/setenv.sh
+        echo 'export PATH=$CATALINA_HOME/bin:$PATH' >> /usr/local/tomcat1/bin/setenv.sh
 
 tomcat1-service:
   cmd.run:
