@@ -18,7 +18,7 @@ tomcat2-setup:
         echo 'export CATALINA_HOME=/usr/local/apache-tomcat-9.0.36' >> /usr/local/tomcat2/bin/setenv.sh
         echo 'export PATH=$CATALINA_HOME/bin:$PATH' >> /usr/local/tomcat2/bin/setenv.sh
 
-tomcat2-service:
+tomcat2-start:
   cmd.run:
     - name: nohup /usr/local/tomcat2/bin/startup.sh
     - require:
