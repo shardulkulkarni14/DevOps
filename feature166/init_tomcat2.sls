@@ -15,7 +15,7 @@ tomcat2-setup:
         chmod -R 755 /usr/local/tomcat2
         echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> /usr/local/tomcat2/bin/setenv.sh
         echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /usr/local/tomcat2/bin/setenv.sh
-        echo 'export CATALINA_HOME=/usr/local/apache-tomcat-9.0.37' >> /usr/local/tomcat2/bin/setenv.sh
+        echo 'export CATALINA_HOME=/usr/local/tomcat2' >> /usr/local/tomcat2/bin/setenv.sh
         echo 'export PATH=$CATALINA_HOME/bin:$PATH' >> /usr/local/tomcat2/bin/setenv.sh
 
 tomcat2-service:
