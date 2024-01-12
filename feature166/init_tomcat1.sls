@@ -20,6 +20,6 @@ tomcat1-setup:
 
 tomcat1-start:
   cmd.run:
-    - name: nohup /usr/local/tomcat1/bin/startup.sh
+    - name: nohup /usr/local/apache-tomcat-9.0.33/bin/startup.sh
     - require:
       - cmd: tomcat1-setup
