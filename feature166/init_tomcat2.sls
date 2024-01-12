@@ -1,25 +1,26 @@
-# init_tomcat2.sls
-tomcat2-installation:
-  pkg.installed:
-    - name: openjdk-11-jre
-    - fromrepo: ubuntu
-
-tomcat2-setup:
-  cmd.run:
-    - name: |
-        wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.36/bin/apache-tomcat-9.0.36.tar.gz -P /tmp
-        tar xf /tmp/apache-tomcat-9.0.36.tar.gz -C /usr/local
-        ln -s /usr/local/apache-tomcat-9.0.36 /usr/local/tomcat2
-        echo 'yzohpwsoorzw' > /usr/local/tomcat2/webapps/ROOT/index.html
-        chown -R root:root /usr/local/tomcat2
-        chmod -R 755 /usr/local/tomcat2
-        echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' > /usr/local/tomcat2/bin/setenv.sh
-        echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /usr/local/tomcat2/bin/setenv.sh
-        echo 'export CATALINA_HOME=/usr/local/apache-tomcat-9.0.36' >> /usr/local/tomcat2/bin/setenv.sh
-        echo 'export PATH=$CATALINA_HOME/bin:$PATH' >> /usr/local/tomcat2/bin/setenv.sh
-
-tomcat2-start:
-  cmd.run:
-    - name: nohup /usr/local/apache-tomcat-9.0.36/bin/startup.sh
-    - require:
-      - cmd: tomcat2-setup
+install package:
+    pkg.latest: 
+      - pkgs:
+        - openjdk-11-jre-headless
+        - perl
+        - openssl
+tomcat-install:
+    file.managed:
+     - name: /usr/local/src/apache-tomcat-9.0.36.tar.gz
+     - source: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.36/bin/apache-tomcat-9.0.37.tar.gz
+     - source_hash: {{ salt['cmd.shell']('echo "md5=`curl -s "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.36/bin/apache-tomcat-9.0.36.tar.gz" | md5sum | cut -c -32`"') }}
+    cmd.run:
+     - name: cd /usr/local/src && tar xf apache-tomcat-9.0.36.tar.gz && mv apache-tomcat-9.0.36 /usr/local/apache-tomcat-9.0.36
+tomcat-setup:
+    cmd.run:
+     - name: |
+         export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+         export PATH=$JAVA_HOME/bin:$PATH
+         export CATALINA_HOME=/usr/local/apache-tomcat-9.0.36
+         export PATH=$CATALINA_HOME/bin:$PATH
+         cd /usr/local/apache-tomcat-9.0.36/webapps/ROOT
+         echo "<p> yzohpwsoorzw </p>" > index.jsp
+         cat index.jsp  
+tomcat-start:
+    cmd.run:
+     - name: nohup /usr/local/apache-tomcat-9.0.36/bin/startup.sh
