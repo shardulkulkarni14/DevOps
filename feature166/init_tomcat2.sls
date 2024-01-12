@@ -1,16 +1,22 @@
+# init_tomcat2.sls
+
 install package:
     pkg.latest: 
       - pkgs:
         - openjdk-11-jre-headless
         - perl
         - openssl
+
 tomcat-install:
     file.managed:
      - name: /usr/local/src/apache-tomcat-9.0.36.tar.gz
-     - source: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.36/bin/apache-tomcat-9.0.37.tar.gz
+     - source: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.36/bin/apache-tomcat-9.0.36.tar.gz
      - source_hash: {{ salt['cmd.shell']('echo "md5=`curl -s "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.36/bin/apache-tomcat-9.0.36.tar.gz" | md5sum | cut -c -32`"') }}
     cmd.run:
-     - name: cd /usr/local/src && tar xf apache-tomcat-9.0.36.tar.gz && mv apache-tomcat-9.0.36 /usr/local/apache-tomcat-9.0.36
+     - name: |
+         cd /usr/local/src && tar xf apache-tomcat-9.0.36.tar.gz && mv apache-tomcat-9.0.36 /usr/local/apache-tomcat-9.0.36
+         ls -l /usr/local/apache-tomcat-9.0.36
+         
 tomcat-setup:
     cmd.run:
      - name: |
@@ -21,6 +27,7 @@ tomcat-setup:
          cd /usr/local/apache-tomcat-9.0.36/webapps/ROOT
          echo "<p> yzohpwsoorzw </p>" > index.jsp
          cat index.jsp  
+         
 tomcat-start:
     cmd.run:
      - name: nohup /usr/local/apache-tomcat-9.0.36/bin/startup.sh

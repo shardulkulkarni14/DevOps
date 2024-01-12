@@ -1,4 +1,5 @@
 # init_nginx.sls
+
 nginx-installation:
   pkg.installed:
     - name: nginx
