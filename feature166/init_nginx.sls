@@ -5,14 +5,14 @@ nginx-installation:
 
 nginx-configuration:
   file.managed:
-    - name: /etc/nginx/nginx.conf
-    - source: salt://feature166/nginx.conf
-    - user: root
-    - group: root
-    - mode: 644
+    - name: /etc/nginx/conf.d/load-balancer.conf
+    - source: salt://nginx/load-balancer.conf
+    - makedirs: true
+    - require:
+      - pkg: nginx
 
-nginx-service:
+nginx-service-restart:
   cmd.run:
-    - name: systemctl restart nginx
-    - onchanges:
+    - name: rm /etc/nginx/sites-enabled/default && /etc/init.d/nginx restart
+    - require:
       - file: nginx-configuration

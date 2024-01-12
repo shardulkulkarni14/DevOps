@@ -1,19 +1,21 @@
-# init_tomcat2.sls
-tomcat2-installation:
+# init_tomcat1.sls
+tomcat1-installation:
   pkg.installed:
     - name: openjdk-11-jre
     - fromrepo: ubuntu    # Use the correct repository name for your Ubuntu version
 
-tomcat2-setup:
+tomcat1-setup:
   cmd.run:
     - name: |
-        wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.y/bin/apache-tomcat-9.0.y.tar.gz -P /tmp
-        tar xf /tmp/apache-tomcat-9.0.y.tar.gz -C /usr/local
-        ln -s /usr/local/apache-tomcat-9.0.y /usr/local/tomcat2
-        echo 'yzohpwsoorzw' > /usr/local/tomcat2/webapps/ROOT/index.html
-        chown -R root:root /usr/local/tomcat2
-        chmod -R 755 /usr/local/tomcat2
+        wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.35/bin/apache-tomcat-9.0.35.tar.gz -P /tmp
+        tar xf /tmp/apache-tomcat-9.0.35.tar.gz -C /usr/local
+        ln -s /usr/local/apache-tomcat-9.0.35 /usr/local/tomcat1
+        echo 'jqrgntsqbfwz' > /usr/local/tomcat1/webapps/ROOT/index.html
+        chown -R root:root /usr/local/tomcat1
+        chmod -R 755 /usr/local/tomcat1
 
-tomcat2-service:
+tomcat1-service:
   cmd.run:
-    - name: /usr/local/tomcat2/bin/startup.sh
+    - name: nohup /usr/local/tomcat1/bin/startup.sh
+    - require:
+      - cmd: tomcat1-setup
