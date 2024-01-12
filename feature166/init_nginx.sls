@@ -6,7 +6,7 @@ nginx-installation:
 nginx-configuration:
   file.managed:
     - name: /etc/nginx/nginx.conf
-    - source: salt://feature166/nginx/nginx.conf
+    - source: salt://feature166/nginx.conf
     - user: root
     - group: root
     - mode: 644
